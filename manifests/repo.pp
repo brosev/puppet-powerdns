@@ -7,7 +7,6 @@ class powerdns::repo {
 
       ensure_packages(['yum-plugin-priorities'],{
         ensure => installed,
-        before => Yumrepo['powerdns'],
       })
 
       yumrepo { 'powerdns':
