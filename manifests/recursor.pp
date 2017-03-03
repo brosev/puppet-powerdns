@@ -6,6 +6,7 @@ class powerdns::recursor inherits powerdns {
 
   service { $::powerdns::params::recursor_service:
     ensure  => running,
+    enable  => true,
     require => Package[$::powerdns::params::recursor_package],
   }
 }

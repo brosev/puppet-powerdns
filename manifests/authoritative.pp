@@ -17,6 +17,7 @@ class powerdns::authoritative inherits powerdns {
 
   service { $::powerdns::params::authoritative_service:
     ensure  => running,
+    enable  => true,
     require => Package[$::powerdns::params::authoritative_package],
   }
 }
