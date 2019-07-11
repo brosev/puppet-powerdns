@@ -1,10 +1,21 @@
 require 'spec_helper_acceptance'
 
+case default['platform']
+when /debian|ubuntu/
+  authoritative_config = '/etc/powerdns/pdns.conf'
+  authoritative_service = 'pdns'
+when /el|centos/
+  authoritative_config = '/etc/pdns/pdns.conf'
+  authoritative_service = 'pdns'
+else
+  logger.notify("Cannot manage PowerDNS on #{default['platform']}")
+end
+
 describe 'powerdns class' do
   context 'authoritative server' do
     # Using puppet_apply as a helper
     it 'should work idempotently with no errors' do
-      pp = <<-EOS
+      pp = <<-PUPPET
       class { 'powerdns':
         db_password => 's0m4r4nd0mp4ssw0rd',
         db_root_password => 'v3rys3c4r3',
@@ -18,26 +29,39 @@ describe 'powerdns class' do
         setting => 'local-port',
         value => 54,
       }
-      EOS
+      PUPPET
 
       # Run it twice and test for idempotency
-      apply_manifest(pp, :catch_failures => true)
-      apply_manifest(pp, :catch_changes  => true)
+      apply_manifest(pp, catch_failures: true)
+      apply_manifest(pp, catch_changes: true)
+    end
+
+    describe file(authoritative_config) do
+      it { should be_file }
+      its(:content) { should match 'gmysql-host=localhost' }
+    end
+
+    describe service(authoritative_service) do
+      it { should be_running }
+    end
+
+    describe command('/usr/bin/pdns_control version') do
+      its(:stdout) { should match '4.1' }
     end
   end
 
   context 'recursor server' do
     it 'should work idempotently with no errors' do
-      pp = <<-EOS
+      pp = <<-PUPPET
       class { 'powerdns':
         authoritative => false,
         recursor => true,
       }
-      EOS
+      PUPPET
 
       # Run it twice and test for idempotency
-      apply_manifest(pp, :catch_failures => true)
-      apply_manifest(pp, :catch_changes  => true)
+      apply_manifest(pp, catch_failures: true)
+      apply_manifest(pp, catch_changes: true)
     end
   end
 end
