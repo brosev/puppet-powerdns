@@ -3,6 +3,7 @@ class powerdns::authoritative ($package_ensure = $powerdns::params::default_pack
   # install the powerdns package
   package { $::powerdns::params::authoritative_package:
     ensure => $package_ensure,
+    before => File["/etc/resolv.conf"],
   }
 
   # install the right backend
