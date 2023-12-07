@@ -58,4 +58,12 @@ class powerdns::params {
       fail("${facts['os']['family']} is not supported yet.")
     }
   }
+  if $facts['os']['family'] == 'RedHat' and $facts['os']['release']['major'] == '7' {
+    powerdns::config { 'local-port':
+      ensure  => present,
+      setting => 'local-port',
+      value   => '54',
+      type    => 'authoritative',
+    }
+  }
 }
